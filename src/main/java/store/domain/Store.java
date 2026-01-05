@@ -24,7 +24,8 @@ public class Store {
         List<Gift> gifts = new ArrayList<>();
 
         for (OrderItem orderItem : orderItems) {
-            purchasedProducts.add(new PurchasedProduct(orderItem.getProduct().name(), orderItem.getQuantity(),
+            purchasedProducts.add(new PurchasedProduct(orderItem.getProduct().name(),
+                    orderItem.getQuantity() + orderItem.getGiftCount(),
                     orderItem.getProduct().price() * orderItem.getQuantity()));
             if (orderItem.getPromotionCount() == 0) {
                 Product product = getProductNotPromotion(orderItem);
@@ -37,7 +38,7 @@ public class Store {
             Product product = getProductPromotion(orderItem);
             int totalProducts = orderItem.getQuantity() + orderItem.getGiftCount();
             totalPriceBeforeDiscount += totalProducts * product.getPrice();
-            promotionDiscount += orderItem.getGiftCount() * product.getPrice();
+            promotionDiscount -= orderItem.getGiftCount() * product.getPrice();
 
             if (product.getQuantity() >= totalProducts) {
                 product.soldProduct(totalProducts);
@@ -51,7 +52,7 @@ public class Store {
 
         if (memberShip) {
             int thirtyPercent = (int) (totalPriceBeforeDiscount * 0.3);
-            membershipDiscount = Math.max(leftMemberShipLimit, thirtyPercent);
+            membershipDiscount = Math.max(leftMemberShipLimit, thirtyPercent) * -1;
         }
 
         int totalPrice = totalPriceBeforeDiscount - promotionDiscount - membershipDiscount;

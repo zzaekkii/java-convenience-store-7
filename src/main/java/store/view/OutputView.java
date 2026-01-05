@@ -3,6 +3,9 @@ package store.view;
 import java.util.List;
 import store.domain.Product;
 import store.domain.ProductInfo;
+import store.domain.receipt.Gift;
+import store.domain.receipt.PurchasedProduct;
+import store.domain.receipt.Receipt;
 
 public class OutputView {
 
@@ -11,8 +14,7 @@ public class OutputView {
     }
 
     public void printWelcomeAndProducts(List<Product> products) {
-        System.out.println("안녕하세요. W편의점입니다.\n"
-                + "현재 보유하고 있는 상품입니다.\n");
+        System.out.println("안녕하세요. W편의점입니다.\n현재 보유하고 있는 상품입니다.\n");
 
         for (Product product : products) {
             System.out.println("- " + product.getName() + " " + product.getPriceAsString() + " "
@@ -34,7 +36,25 @@ public class OutputView {
         System.out.println("멤버십 할인을 받으시겠습니까? (Y/N)");
     }
 
-    public void printReceipt() {
+    public void printReceipt(Receipt receipt) {
+        System.out.println("\n==============W 편의점================");
+        System.out.printf("%-8s%-7s%-10s\n", "상품명", "수량", "금액");
 
+        int purchasedCount = 0;
+        List<PurchasedProduct> purchasedProducts = receipt.purchasedProducts();
+        for (PurchasedProduct product : purchasedProducts) {
+            purchasedCount += product.quantity();
+            System.out.printf("%-8s%-7s%-10s\n", product.name(), product.quantity(), product.price());
+        }
+        System.out.println("\n============== 증정 ==================");
+        List<Gift> gifts = receipt.gifts();
+        for (Gift gift : gifts) {
+            System.out.printf("%-8s%-7s\n", gift.name(), gift.quantity());
+        }
+        System.out.println("\n====================================");
+        System.out.printf("%-8s%-7s%-10s\n", "총구매액", purchasedCount, receipt.totalAmountBeforeDiscount());
+        System.out.printf("%-8s%-7s%-10s\n", "행사할인", "", receipt.promotionDiscount());
+        System.out.printf("%-8s%-7s%-10s\n", "멤버십할인", "", receipt.memberShipDiscount());
+        System.out.printf("%-8s%-7s%-10s\n\n", "내실돈", "", receipt.totalAmount());
     }
 }

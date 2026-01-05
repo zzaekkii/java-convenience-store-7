@@ -6,7 +6,6 @@ import store.domain.Product;
 import store.domain.Promotion;
 import store.domain.PromotionNotice;
 import store.domain.Store;
-import store.domain.receipt.Receipt;
 import store.exception.ErrorMessage;
 import store.view.FileInputView;
 import store.view.InputView;
@@ -18,8 +17,6 @@ public class StoreController {
     private final OutputView outputView;
     private final FileInputView fileInputView;
 
-    private final boolean continuePurchase = true;
-
     public StoreController(InputView inputView, OutputView outputView, FileInputView fileInputView) {
         this.inputView = inputView;
         this.outputView = outputView;
@@ -29,12 +26,18 @@ public class StoreController {
     public void run() {
         Store store = new Store(readProductsFromMd(readPromotionsFromMd()));
         int leftMemberShipLimit = 8000;
+        boolean continuePurchase = true;
 
         while (continuePurchase) {
             List<OrderItem> orderItems = welcome(store);
             applyPromotion(store, orderItems);
-            Receipt receipt = store.purchase(orderItems, applyMemberShip(), leftMemberShipLimit);
+            purchaseAndShowReceipt(store, orderItems, leftMemberShipLimit);
+            
         }
+    }
+
+    private void purchaseAndShowReceipt(Store store, List<OrderItem> orderItems, int leftMemberShipLimit) {
+        outputView.printReceipt(store.purchase(orderItems, applyMemberShip(), leftMemberShipLimit));
     }
 
     private List<OrderItem> welcome(Store store) {

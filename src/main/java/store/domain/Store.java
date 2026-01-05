@@ -173,10 +173,10 @@ public class Store {
                 continue;
             }
             if (product.getName().equals(productName)) {
-                return true;
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     private Promotion getPromotion(String productName) {

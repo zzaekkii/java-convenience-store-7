@@ -1,9 +1,7 @@
 package store.view;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -14,7 +12,7 @@ import store.domain.Promotion;
 
 public class FileInputView {
 
-    public List<Promotion> readPromotions() throws IOException, ParseException {
+    public List<Promotion> readPromotions() throws Exception {
         List<String> lines = Files.readAllLines(Paths.get("src/main/resources/promotions.md"));
         List<Promotion> promotions = new ArrayList<>();
 
@@ -39,7 +37,7 @@ public class FileInputView {
         return promotions;
     }
 
-    public List<Product> readProducts(List<Promotion> promotions) throws IOException {
+    public List<Product> readProducts(List<Promotion> promotions) throws Exception {
         List<String> lines = Files.readAllLines(Paths.get("src/main/resources/products.md"));
         List<Product> products = new ArrayList<>();
 

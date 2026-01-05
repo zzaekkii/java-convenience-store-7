@@ -57,4 +57,8 @@ public class OutputView {
         System.out.printf("%-8s%-7s%-10s\n", "멤버십할인", "", receipt.memberShipDiscount());
         System.out.printf("%-8s%-7s%-10s\n\n", "내실돈", "", receipt.totalAmount());
     }
+
+    public void printWhetherPurchaseAgain() {
+        System.out.println("감사합니다. 구매하고 싶은 다른 상품이 있나요? (Y/N)");
+    }
 }

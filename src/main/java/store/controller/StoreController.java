@@ -32,12 +32,8 @@ public class StoreController {
             List<OrderItem> orderItems = welcome(store);
             applyPromotion(store, orderItems);
             purchaseAndShowReceipt(store, orderItems, leftMemberShipLimit);
-            
+            continuePurchase = readWhetherPurchaseAgain();
         }
-    }
-
-    private void purchaseAndShowReceipt(Store store, List<OrderItem> orderItems, int leftMemberShipLimit) {
-        outputView.printReceipt(store.purchase(orderItems, applyMemberShip(), leftMemberShipLimit));
     }
 
     private List<OrderItem> welcome(Store store) {
@@ -121,6 +117,21 @@ public class StoreController {
     private boolean applyMemberShip() {
         while (true) {
             outputView.printMemberShipRequest();
+            try {
+                return inputView.readCommand();
+            } catch (IllegalArgumentException e) {
+                outputView.printErrorMessage(e.getMessage());
+            }
+        }
+    }
+
+    private void purchaseAndShowReceipt(Store store, List<OrderItem> orderItems, int leftMemberShipLimit) {
+        outputView.printReceipt(store.purchase(orderItems, applyMemberShip(), leftMemberShipLimit));
+    }
+
+    private boolean readWhetherPurchaseAgain() {
+        while (true) {
+            outputView.printWhetherPurchaseAgain();
             try {
                 return inputView.readCommand();
             } catch (IllegalArgumentException e) {

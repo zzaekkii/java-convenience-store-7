@@ -4,6 +4,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -41,34 +42,46 @@ public class FileInputView {
         List<String> lines = Files.readAllLines(Paths.get("src/main/resources/products.md"));
         List<Product> products = new ArrayList<>();
 
-        boolean firstLine = true;
-        for (String line : lines) {
-            if (firstLine) {
-                firstLine = false;
-                continue;
-            }
-
-            String[] values = line.split(",");
+        Collections.reverse(lines);
+        final int len = lines.size() - 1;
+        for (int i = 0; i < len; i++) {
+            String[] values = lines.get(i).split(",");
 
             String name = values[0];
             int price = Integer.parseInt(values[1]);
             int quantity = Integer.parseInt(values[2]);
             String promotionValue = values[3];
 
-            boolean existPromotion = false;
+            boolean notPromotion = true;
             for (Promotion promotion : promotions) {
                 if (promotion.name().equals(promotionValue)) {
+                    // 프로모션 미적용 상품이 없었으면 재고 없음 등록
+                    if (isNotExistNotPromotionProduct(products, name)) {
+                        products.add(new Product(name, price, 0, Optional.empty()));
+                    }
+
                     products.add(new Product(name, price, quantity, Optional.of(promotion)));
-                    existPromotion = true;
+                    notPromotion = false;
                     break;
                 }
             }
 
-            if (!existPromotion) {
+            if (notPromotion) {
                 products.add(new Product(name, price, quantity, Optional.empty()));
             }
         }
 
+        Collections.reverse(products);
+
         return products;
+    }
+
+    private static boolean isNotExistNotPromotionProduct(List<Product> products, String name) {
+        for (Product product : products) {
+            if (product.getName().equals(name)) {
+                return false;
+            }
+        }
+        return true;
     }
 }

@@ -13,6 +13,9 @@ import store.domain.Store;
 
 public class InputView {
 
+    private static final String YES = "Y";
+    private static final String NO = "N";
+
     public List<OrderItem> readOrders(Store store) {
         String input = readAndValidate();
         validateSeparator(input);
@@ -53,6 +56,26 @@ public class InputView {
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException(ETC.getMessage());
         }
+    }
+
+    public boolean readWhetherAddProduct() {
+        String input = readAndValidate().toUpperCase();
+
+        if (!input.matches("^[YN]")) {
+            throw new IllegalArgumentException(ETC.getMessage());
+        }
+
+        return YES.equals(input);
+    }
+
+    public boolean readWhetherPurchase() {
+        String input = readAndValidate().toUpperCase();
+
+        if (!input.matches("^[YN]")) {
+            throw new IllegalArgumentException(ETC.getMessage());
+        }
+
+        return YES.equals(input);
     }
 
     private static String readAndValidate() {

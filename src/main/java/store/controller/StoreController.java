@@ -4,6 +4,7 @@ import java.util.List;
 import store.domain.OrderItem;
 import store.domain.Product;
 import store.domain.Promotion;
+import store.domain.PromotionNotice;
 import store.domain.Store;
 import store.exception.ErrorMessage;
 import store.view.FileInputView;
@@ -26,6 +27,7 @@ public class StoreController {
 
     public void run() {
         Store store = new Store(readProductsFromMd(readPromotionsFromMd()));
+        int memberShipDiscount = 0;
 
         while (continuePurchase) {
             List<OrderItem> orderItems = welcome(store);
@@ -47,7 +49,69 @@ public class StoreController {
     }
 
     private void applyPromotion(Store store, List<OrderItem> orderItems) {
-        
+        for (OrderItem item : orderItems) {
+            PromotionNotice promotionNotice = store.canPromotion(item);
+
+            if (promotionNotice.equals(PromotionNotice.NOT_PROMOTION)) {
+                continue;
+            }
+
+            Promotion promotion = store.getPromotionForProduct(item);
+            int required = promotion.required();
+            int giftsPerPromotion = promotion.gifts();
+            int promotionSet = required + giftsPerPromotion;
+
+            int orderQuantity = item.getQuantity();
+            if (promotionNotice.equals(PromotionNotice.SATISFIED)) {
+                item.appliedPromotion(promotion, orderQuantity / promotionSet);
+                continue;
+            }
+
+            if (promotionNotice.equals(PromotionNotice.OUT_OF_STOCK)) {
+                int stocks = store.getPromotionProductStocks(item);
+                item.appliedPromotion(promotion, stocks / promotionSet);
+
+                noticeWithoutPromotion(item, orderQuantity - stocks / promotionSet * promotionSet);
+                continue;
+            }
+
+            item.appliedPromotion(promotion, orderQuantity / promotionSet);
+            if (orderQuantity % promotionSet >= required) {
+                requestAddPromotionProduct(item, giftsPerPromotion);
+                continue;
+            }
+            noticeWithoutPromotion(item, orderQuantity % promotionSet);
+        }
+    }
+
+    private void noticeWithoutPromotion(OrderItem item, int quantity) {
+        while (true) {
+            outputView.printPurchaseProductWithoutPromotionRequest(item.getProduct(), quantity);
+            try {
+                if (inputView.readWhetherPurchase()) {
+                    return;
+                }
+                item.takeOutProduct(quantity);
+                return;
+            } catch (IllegalArgumentException e) {
+                outputView.printErrorMessage(e.getMessage());
+            }
+        }
+    }
+
+    private void requestAddPromotionProduct(OrderItem item, int gifts) {
+        while (true) {
+            outputView.printAddProductRequest(item.getProduct(), gifts);
+            try {
+                if (inputView.readWhetherAddProduct()) {
+                    item.addGift(gifts);
+                    return;
+                }
+                return;
+            } catch (IllegalArgumentException e) {
+                outputView.printErrorMessage(e.getMessage());
+            }
+        }
     }
 
     private List<Promotion> readPromotionsFromMd() {

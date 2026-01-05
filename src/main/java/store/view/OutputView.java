@@ -44,7 +44,7 @@ public class OutputView {
         List<PurchasedProduct> purchasedProducts = receipt.purchasedProducts();
         for (PurchasedProduct product : purchasedProducts) {
             purchasedCount += product.quantity();
-            System.out.printf("%-8s%-7s%-10s\n", product.name(), product.quantity(), product.price());
+            System.out.printf("%-8s%-7s%,-10d\n", product.name(), product.quantity(), product.price());
         }
         System.out.println("\n============== 증정 ==================");
         List<Gift> gifts = receipt.gifts();
@@ -52,10 +52,10 @@ public class OutputView {
             System.out.printf("%-8s%-7s\n", gift.name(), gift.quantity());
         }
         System.out.println("\n====================================");
-        System.out.printf("%-8s%-7s%-10s\n", "총구매액", purchasedCount, receipt.totalAmountBeforeDiscount());
-        System.out.printf("%-8s%-7s%-10s\n", "행사할인", "", receipt.promotionDiscount());
-        System.out.printf("%-8s%-7s%-10s\n", "멤버십할인", "", receipt.memberShipDiscount());
-        System.out.printf("%-8s%-7s%-10s\n\n", "내실돈", "", receipt.totalAmount());
+        System.out.printf("%-8s%-7s%,-10d\n", "총구매액", purchasedCount, receipt.totalAmountBeforeDiscount());
+        System.out.printf("%-8s%-7s%,-10d\n", "행사할인", "", receipt.promotionDiscount());
+        System.out.printf("%-8s%-7s%,-10d\n", "멤버십할인", "", receipt.memberShipDiscount());
+        System.out.printf("%-8s%-7s%,-10d\n\n", "내실돈", "", receipt.totalAmount());
     }
 
     public void printWhetherPurchaseAgain() {

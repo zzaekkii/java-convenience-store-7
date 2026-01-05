@@ -5,7 +5,7 @@ import java.util.Optional;
 public class Product {
     private final String name;
     private final int price;
-    private final int quantity;
+    private int quantity = 0;
     private final Optional<Promotion> promotion;
 
 
@@ -14,6 +14,10 @@ public class Product {
         this.price = price;
         this.quantity = quantity;
         this.promotion = promotion;
+    }
+
+    public void soldProduct(int quantity) {
+        this.quantity -= quantity;
     }
 
     public String getName() {

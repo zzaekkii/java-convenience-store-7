@@ -6,6 +6,7 @@ import store.domain.Product;
 import store.domain.Promotion;
 import store.domain.PromotionNotice;
 import store.domain.Store;
+import store.domain.receipt.Receipt;
 import store.exception.ErrorMessage;
 import store.view.FileInputView;
 import store.view.InputView;
@@ -27,12 +28,12 @@ public class StoreController {
 
     public void run() {
         Store store = new Store(readProductsFromMd(readPromotionsFromMd()));
-        int memberShipDiscount = 0;
+        int leftMemberShipLimit = 8000;
 
         while (continuePurchase) {
             List<OrderItem> orderItems = welcome(store);
             applyPromotion(store, orderItems);
-
+            Receipt receipt = store.purchase(orderItems, applyMemberShip(), leftMemberShipLimit);
         }
     }
 
@@ -88,7 +89,7 @@ public class StoreController {
         while (true) {
             outputView.printPurchaseProductWithoutPromotionRequest(item.getProduct(), quantity);
             try {
-                if (inputView.readWhetherPurchase()) {
+                if (inputView.readCommand()) {
                     return;
                 }
                 item.takeOutProduct(quantity);
@@ -103,11 +104,22 @@ public class StoreController {
         while (true) {
             outputView.printAddProductRequest(item.getProduct(), gifts);
             try {
-                if (inputView.readWhetherAddProduct()) {
+                if (inputView.readCommand()) {
                     item.addGift(gifts);
                     return;
                 }
                 return;
+            } catch (IllegalArgumentException e) {
+                outputView.printErrorMessage(e.getMessage());
+            }
+        }
+    }
+
+    private boolean applyMemberShip() {
+        while (true) {
+            outputView.printMemberShipRequest();
+            try {
+                return inputView.readCommand();
             } catch (IllegalArgumentException e) {
                 outputView.printErrorMessage(e.getMessage());
             }

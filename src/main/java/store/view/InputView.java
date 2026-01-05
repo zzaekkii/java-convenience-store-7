@@ -58,17 +58,7 @@ public class InputView {
         }
     }
 
-    public boolean readWhetherAddProduct() {
-        String input = readAndValidate().toUpperCase();
-
-        if (!input.matches("^[YN]")) {
-            throw new IllegalArgumentException(ETC.getMessage());
-        }
-
-        return YES.equals(input);
-    }
-
-    public boolean readWhetherPurchase() {
+    public boolean readCommand() {
         String input = readAndValidate().toUpperCase();
 
         if (!input.matches("^[YN]")) {

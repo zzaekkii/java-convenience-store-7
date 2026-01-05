@@ -2,6 +2,9 @@ package store.domain;
 
 import java.util.ArrayList;
 import java.util.List;
+import store.domain.receipt.Gift;
+import store.domain.receipt.PurchasedProduct;
+import store.domain.receipt.Receipt;
 import store.exception.ErrorMessage;
 
 public class Store {
@@ -12,8 +15,49 @@ public class Store {
         this.products = products;
     }
 
-    public List<Product> getProducts() {
-        return new ArrayList<>(products);
+    public Receipt purchase(List<OrderItem> orderItems, boolean memberShip, int leftMemberShipLimit) {
+        int totalPriceBeforeDiscount = 0;
+        int promotionDiscount = 0;
+        int membershipDiscount = 0;
+
+        List<PurchasedProduct> purchasedProducts = new ArrayList<>();
+        List<Gift> gifts = new ArrayList<>();
+
+        for (OrderItem orderItem : orderItems) {
+            purchasedProducts.add(new PurchasedProduct(orderItem.getProduct().name(), orderItem.getQuantity(),
+                    orderItem.getProduct().price() * orderItem.getQuantity()));
+            if (orderItem.getPromotionCount() == 0) {
+                Product product = getProductNotPromotion(orderItem);
+                product.soldProduct(orderItem.getQuantity());
+                totalPriceBeforeDiscount += product.getPrice() * orderItem.getQuantity();
+                continue;
+            }
+
+            gifts.add(new Gift(orderItem.getProduct().name(), orderItem.getGiftCount()));
+            Product product = getProductPromotion(orderItem);
+            int totalProducts = orderItem.getQuantity() + orderItem.getGiftCount();
+            totalPriceBeforeDiscount += totalProducts * product.getPrice();
+            promotionDiscount += orderItem.getGiftCount() * product.getPrice();
+
+            if (product.getQuantity() >= totalProducts) {
+                product.soldProduct(totalProducts);
+                continue;
+            }
+
+            totalProducts -= product.getQuantity();
+            product.soldProduct(product.getQuantity());
+            getProductNotPromotion(orderItem).soldProduct(totalProducts);
+        }
+
+        if (memberShip) {
+            int thirtyPercent = (int) (totalPriceBeforeDiscount * 0.3);
+            membershipDiscount = Math.max(leftMemberShipLimit, thirtyPercent);
+        }
+
+        int totalPrice = totalPriceBeforeDiscount - promotionDiscount - membershipDiscount;
+
+        return new Receipt(purchasedProducts, gifts, totalPriceBeforeDiscount,
+                promotionDiscount, membershipDiscount, totalPrice);
     }
 
     public boolean isExistProduct(String productName) {
@@ -23,15 +67,6 @@ public class Store {
             }
         }
         return false;
-    }
-
-    public ProductInfo getProductInfo(String productName) {
-        for (Product product : products) {
-            if (product.getName().equals(productName)) {
-                return new ProductInfo(productName, product.getPrice());
-            }
-        }
-        throw new IllegalArgumentException(ErrorMessage.INVALID_PRODUCT.getMessage());
     }
 
     public boolean canPurchase(String productName, int quantity) {
@@ -75,6 +110,19 @@ public class Store {
         return PromotionNotice.ADD_MORE_GIFT;
     }
 
+    public List<Product> getProducts() {
+        return new ArrayList<>(products);
+    }
+
+    public ProductInfo getProductInfo(String productName) {
+        for (Product product : products) {
+            if (product.getName().equals(productName)) {
+                return new ProductInfo(productName, product.getPrice());
+            }
+        }
+        throw new IllegalArgumentException(ErrorMessage.INVALID_PRODUCT.getMessage());
+    }
+
     public int getPromotionProductStocks(OrderItem item) {
         String productName = item.getProduct().name();
         if (isNotExistPromotion(productName)) {
@@ -90,6 +138,32 @@ public class Store {
             throw new IllegalArgumentException(ErrorMessage.ETC.getMessage());
         }
         return getPromotion(productName);
+    }
+
+    private Product getProductNotPromotion(OrderItem item) {
+        String productName = item.getProduct().name();
+        for (Product product : products) {
+            if (product.getPromotion().isPresent()) {
+                continue;
+            }
+            if (product.getName().equals(productName)) {
+                return product;
+            }
+        }
+        throw new IllegalArgumentException(ErrorMessage.ETC.getMessage());
+    }
+
+    private Product getProductPromotion(OrderItem item) {
+        String productName = item.getProduct().name();
+        for (Product product : products) {
+            if (product.getPromotion().isEmpty()) {
+                continue;
+            }
+            if (product.getName().equals(productName)) {
+                return product;
+            }
+        }
+        throw new IllegalArgumentException(ErrorMessage.ETC.getMessage());
     }
 
     private boolean isNotExistPromotion(String productName) {

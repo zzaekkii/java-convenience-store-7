@@ -30,7 +30,7 @@ public class StoreController {
         while (continuePurchase) {
             List<OrderItem> orderItems = welcome(store);
             applyPromotion(store, orderItems);
-            break;
+
         }
     }
 
@@ -47,7 +47,7 @@ public class StoreController {
     }
 
     private void applyPromotion(Store store, List<OrderItem> orderItems) {
-
+        
     }
 
     private List<Promotion> readPromotionsFromMd() {
